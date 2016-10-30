@@ -1,0 +1,1 @@
+python SMPPServer SMPPServer.cfg

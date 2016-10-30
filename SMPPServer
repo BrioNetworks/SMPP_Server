@@ -1,0 +1,65 @@
+#!/usr/bin/python
+
+########################################################################################
+#
+# Filename:    SMPPServer
+#  
+# Description
+# =========== 
+#
+#
+# Author        : Michael Hsiao 
+#
+# Date      : 2005/06/05
+# Desc      : Initial
+
+# Modify by : Michael Hsiao
+# Date      : 2010/10/20
+# Desc      : Re-use for SMPP protocol
+########################################################################################
+import sys
+import PCA_GenLib
+import PCA_SMPPServerSocket
+
+if __name__ == '__main__':		
+
+  def MainTest(XMLCFG):
+	try:
+		print 'Start Program ...'
+		try:
+			TimeOut = 0.8
+			PCA_GenLib.DBXMLCFGInit(XMLCFG)	
+			
+			Server = PCA_SMPPServerSocket.Acceptor(XMLCFG)
+			try:
+				Server.dispatcher(TimeOut)
+			finally:				
+				Server.close()
+		finally:
+			PCA_GenLib.CloseLog()
+
+	except:
+ 	  	print '\n\n uncaught ! < ',sys.exc_type,sys.exc_value,' >'
+ 	  	import traceback
+		traceback.print_exc()  
+		raise
+   	
+  ############################### Main Program ############################################	  
+  try:	
+	try:
+                cfg_file_name = sys.argv[1]
+
+                XMLCFG =  open(cfg_file_name,"r").read()
+        except IndexError:
+                raise
+
+	MainTest(XMLCFG)
+  except:
+  	print "Error or .cfg configuration file not found"
+ 	print "Msg = : <%s>,<%s>" % (sys.exc_type,sys.exc_value)
+ 	import traceback
+	traceback.print_exc()  	
+  	sys.exit()
+  	
+ 
+ 
