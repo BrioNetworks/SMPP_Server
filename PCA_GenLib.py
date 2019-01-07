@@ -1,4 +1,4 @@
-
+#!/home/snadmin/bin/aepython
 import sys,traceback
 import time,string
 import os,stat,signal
@@ -7,6 +7,21 @@ import PCA_XMLParser
 
 
 ExitFlag = 0
+
+########################################################################################
+#
+# Filename:    PCA_ThreadGenLib.py
+#  
+# Description
+# ===========
+# 
+#
+#
+# Author        : Michael Hsiao 
+#
+# Date 		: 2004/09/10
+# Desc          : Debug Log Module for Multi-Thread programming
+########################################################################################
 
 #SignalFlag = 0
 
@@ -19,6 +34,89 @@ Message = { '000' : 'Success',
 	    '060' : 'Socket Message Format Error',
 	    '099' : 'Unknow Error'}
 
+########################################################		
+## convert string to bcd	     
+######################################################## 
+def converStringToBCD(data):
+  try:		
+    Digits = ""
+    length_of_digits = len(data)/2
+    j = 0
+   
+    for i in range(length_of_digits):          
+      tmp = int(data[j:j+2],16)
+      Digits = Digits + chr(int(tmp))
+      j = j + 2
+    
+    BCDString = Digits	
+    return BCDString
+  except:
+    Msg = "converStringToBCD Error :<%s>,<%s>" % (sys.exc_type,sys.exc_value)
+    raise Msg
+
+
+########################################################		
+## convert string to bcd	     
+######################################################## 
+def converStringToReverseBCD(data):
+  try:		
+    Digits = ""
+    length_of_digits = len(data)/2
+    j = 0
+   
+    for i in range(length_of_digits):    
+      dig = data[j+1] + data[j]      
+      tmp = int(dig,16)
+      Digits = Digits + chr(int(tmp))
+      j = j + 2
+    
+    BCDString = Digits	
+    return BCDString
+  except:
+    Msg = "converStringToReverseBCD Error :<%s>,<%s>" % (sys.exc_type,sys.exc_value)
+    raise Msg
+########################################################		
+## convert ascii to hex and character format	      ##
+## retur a string (	      ##
+######################################################## 
+def getHexBCDString(data):
+	try:
+		ASCIIData = ToASCII(data)
+		HexString = ''
+   		
+       	 	for ascii_value in ASCIIData:
+       	 		hex_data = hex(ascii_value)
+       	 		if (len(hex_data) == 3):
+        			#hex_data = '0x0%s' % hex_data[-1]
+        			hex_data = '0%s' % hex_data[-1]
+			else:
+        			hex_data = '%s' % hex_data[2:]
+        		
+        		HexString = "%s%s%s" % (HexString,hex_data[1],hex_data[0])    
+        		
+        	return HexString
+	except:
+   		Msg = "getHexString Error :<%s>,<%s>" % (sys.exc_type,sys.exc_value)
+		#cs_GenLib.WriteLog(Msg,0)	
+  		raise	Msg
+
+########################################################		
+## convert ascii to hex and character format	      ##
+## retur a string (	      ##
+######################################################## 
+def getOctString(data):
+	try:
+		ASCIIData = ToASCII(data)
+		OctString = ''
+   		
+       	 	for ascii_value in ASCIIData:
+        		OctString = "%s%s" % (OctString,ascii_value)    
+        		
+        	return OctString
+	except:
+   		Msg = "getOctString Error :<%s>,<%s>" % (sys.exc_type,sys.exc_value)
+		#cs_GenLib.WriteLog(Msg,0)	
+  		raise	Msg
 ########################################################		
 ## convert ascii to hex and character format	      ##
 ## retur a string (	      ##
@@ -44,6 +142,29 @@ def getHexString(data):
 		#cs_GenLib.WriteLog(Msg,0)	
   		raise	Msg
 
+########################################################		
+## convert ascii to hex and character format	      ##
+## retur a string (	      ##
+######################################################## 
+def getHexIMSIString(data):
+	try:
+		ASCIIData = ToASCII(data)
+		HexString = ''
+   		
+       	 	for ascii_value in ASCIIData:
+       	 		hex_data = hex(ascii_value)
+       	 		if (len(hex_data) == 3):        			
+        			hex_data = '%s0' % hex_data[-1]
+			else:
+        			hex_data = '%s%s' % (hex_data[3],hex_data[2])
+        		
+        		HexString = "%s%s" % (HexString,hex_data)    
+        		
+        	return HexString
+	except:
+   		Msg = "getHexString Error :<%s>,<%s>" % (sys.exc_type,sys.exc_value)
+		#cs_GenLib.WriteLog(Msg,0)	
+  		raise	Msg
 ########################################################		
 ## convert ascii to hex and character format	      ##
 ## retur a string (just print it for debug )	      ##

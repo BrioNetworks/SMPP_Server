@@ -17,6 +17,7 @@ class Handler(unbind.Handler):
 	 
 	def startDocument(self):
 		self.address_range = 'undef'
+		self.system_id = 'undef'
 		
 	
 	def startElement(self, name, attrs):
@@ -26,7 +27,9 @@ class Handler(unbind.Handler):
 			
 			self.MessageName = name		
 			
-			if name == "address_range":
+			if name == "system_id":
+				self.system_id = attrs
+ 			if name == "address_range":
 				self.address_range = attrs
 			
 			Msg = "startElement OK"
@@ -44,6 +47,12 @@ class Handler(unbind.Handler):
 	
 	def getADDRESS_RANGE(self):
 		return self.address_range	
+		
+        
+	def getSystem_ID(self):
+	        Msg = "bind receiver system_id = %s" % self.system_id
+                PCA_GenLib.WriteLog(Msg,0)
+		return self.system_id	
 		
 #########################################################################
 # 
@@ -84,6 +93,11 @@ class Parser(unbind.Parser):
 			system_id = source[0:start_pos]			
 			self.DebugStr = "system_id = <%s>" % system_id	
 			
+			name = "system_id"
+			attrs = system_id
+			content = attrs
+			self.set_handler(name,attrs,content)
+				
 			source = source[start_pos+1:]
 			start_pos = string.find(source,chr(0x00))
 			password = source[0:start_pos]			

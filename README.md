@@ -1,3 +1,7 @@
+Ack as SMPP Server
+support SMPP bind,submit_sm
+while receive submit_sm with register flag=1 , will send DR back to connected receiver with same System_ID
+
 Installation Procedure .
 
 </br>

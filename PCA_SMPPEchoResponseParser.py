@@ -1,25 +1,18 @@
-
-
 import sys,string,struct,time
 import PCA_GenLib
 import PCA_Parser
 import PCA_XMLParser
 import PCA_SMPPParser
 import PCA_SMPP_Parameter_Tag
-
-  
-
-reload(PCA_SMPPParser)                    
+import PCA_SMPPParser
+#reload(PCA_SMPPParser)                    
                 
-
 ##############################################################################
 ###    Message Handler   	
 ##############################################################################
 class Handler(PCA_Parser.ContentHandler):	
 	
 	bind_transmitter_resp_pdu = chr(0x80)+chr(0x00)+chr(0x00)+chr(0x02)
-	
-
 	
 	DebugStr = "na"
 	
@@ -42,6 +35,9 @@ class Handler(PCA_Parser.ContentHandler):
 		self.address_range = 'undef'
 		self.request_command_id = 'undef'
 		self.dest_address = 'undef'
+		self.system_id = 'undef_txt1'
+		self.message_id = 'undef_msg_id'
+                self.DELIVER_SM_PDU = 'undef_echo'
 		
 	
 	def startElement(self, name, attrs):
@@ -51,12 +47,12 @@ class Handler(PCA_Parser.ContentHandler):
 			
 			self.MessageName = name						
 		
-		
 			if name == "sequence_number":
 				self.sequence_number = attrs
 			
 			if name == "command_id":
 				self.command_id = chr(0x80) + attrs[1:4]
+ 				#self.command_id = chr(0x80) + chr(0x00)+chr(0x00)+chr(0x01)
 						
 			
 			Msg = "startElement OK"
@@ -71,15 +67,26 @@ class Handler(PCA_Parser.ContentHandler):
 	
 		if self.MessageName == "command_id":
 			self.request_command_id = content
+
+		if self.MessageName == "message_id":
+			self.message_id = content
+		if self.MessageName == "DELIVER_SM_PDU":
+			self.DELIVER_SM_PDU = content
+			#Msg = "we got DELIVER_SM_PDU in ECHO"
+			#PCA_GenLib.WriteLog(Msg,1)        	
 				
 		if self.MessageName == "address_range":
 			self.address_range = content
-			
-        		
+
+		if self.MessageName == "system_id":
+			self.system_id = content
+                
 		if self.MessageName == "dest_address":
 			self.dest_address = content
+
+		if self.MessageName == "TXT":
+			self.TXT = content
 			
-        	
 
 	def endDocument(self,DebugStr,TID,SOURCD_ID,response_message):
         	try:
@@ -159,18 +166,18 @@ class Handler(PCA_Parser.ContentHandler):
 	
 	def getCOMMAND_ID(self):	
 		return self.request_command_id	
-
+	def getMessage_ID(self):	
+		return self.message_id
+	def getDELIVER_SM_PDU(self):	
+		return self.DELIVER_SM_PDU
 	def getADDRESS_RANGE(self):	
-	
-		
 		return self.address_range	
-						
-
-	
+	def getSystem_ID(self):	
+		return self.system_id	
 	def getDEST_ADDR(self):	
-	
-	
 		return self.dest_address	
+	def getTXT(self):	
+		return self.TXT	
 						
 #########################################################################
 # 
@@ -193,7 +200,3 @@ class Parser(PCA_SMPPParser.Parser):
 			PCA_GenLib.WriteLog(Msg,0)
 			raise
 	
-	
-
-    
-		

@@ -1,5 +1,3 @@
-
-
 import sys,struct,time
 import PCA_GenLib
 import PCA_Parser
@@ -13,18 +11,13 @@ import PCA_DLL
 ##############################################################################
 class Handler(PCA_Parser.ContentHandler):	
 	
-	
-	
  	def __init__(self):
 		PCA_Parser.ContentHandler.__init__(self)
 	 	
-	
-	
 		
 	def startElement(self, name, attrs):
 		self.TID = ''
 		self.SOURCD_ID = "HeartBeat"
-	
 	
 	def endDocument(self,debugstr,TID,SOURCD_ID ):
         	self.DebugStr = debugstr
@@ -41,12 +34,12 @@ class Handler(PCA_Parser.ContentHandler):
 #########################################################################
 class Parser(PCA_Parser.Parser):
 	
-	
-	
 	bind_receiver = chr(0x00)+chr(0x00)+chr(0x00)+chr(0x01)
 	bind_receiver_resp = chr(0x80)+chr(0x0)+chr(0x00)+chr(0x01)
 	bind_transmitter = chr(0x00)+chr(0x00)+chr(0x00)+chr(0x02)
 	bind_transmitter_resp = chr(0x80)+chr(0x00)+chr(0x00)+chr(0x02)
+	bind_tranceiver = chr(0x00)+chr(0x00)+chr(0x00)+chr(0x09)
+	bind_tranceiver_resp = chr(0x80)+chr(0x00)+chr(0x00)+chr(0x09)
 	outbind = chr(0x00)+chr(0x0)+chr(0x00)+chr(0x0b) 
 	unbind = chr(0x00)+chr(0x00)+chr(0x00)+chr(0x06) 
 	unbind_resp = chr(0x80)+chr(0x00)+chr(0x00)+chr(0x06) 
@@ -60,8 +53,8 @@ class Parser(PCA_Parser.Parser):
 	cancel_sm_resp =chr(0x80)+chr(0x0)+chr(0x00)+chr(0x08) 
 	replace_sm =  chr(0x00)+chr(0x0)+chr(0x00)+chr(0x07) 
 	replace_sm_resp=  chr(0x80)+chr(0x0)+chr(0x00)+chr(0x07) 
-	enquire_link =  chr(0x00)+chr(0x00)+chr(0x00)+chr(0x0a) 
-	enquire_link_resp =  chr(0x80)+chr(0x00)+chr(0x00)+chr(0x0a) 
+	enquire_link =  chr(0x00)+chr(0x00)+chr(0x00)+chr(0x15) 
+	enquire_link_resp =  chr(0x80)+chr(0x00)+chr(0x00)+chr(0x15) 
  	generic_nack =  chr(0x80)+chr(0x00)+chr(0x00)+chr(0x00) 
 	
 	command_id_dict = {}
@@ -75,6 +68,8 @@ class Parser(PCA_Parser.Parser):
  	command_id_dict[deliver_sm_resp] = 'deliver_sm_resp'
  	command_id_dict[enquire_link] = 'enquire_link'
  	command_id_dict[enquire_link_resp] = 'enquire_link_resp'
+ 	command_id_dict[bind_tranceiver] = 'bind_tranceiver'
+ 	command_id_dict[bind_tranceiver_resp] = 'bind_tranceiver_resp'
  	
  	command_id_dict[unbind] = 'unbind'
  	command_id_dict[unbind_resp] = 'unbind_resp'
@@ -109,8 +104,6 @@ class Parser(PCA_Parser.Parser):
 		self._cont_handler.characters(content)
         	self._cont_handler.endElement(name)
         	
-	
-	
 	def parse(self, source):
 		try:
 			Msg = "parser init"
@@ -144,6 +137,8 @@ class Parser(PCA_Parser.Parser):
 					command_id = self.command_id_dict[attrs]
 				except:
 					command_id  = 'undef'
+				        Msg = "undef command_id=<%s>" % content
+				        PCA_GenLib.WriteLog(Msg,0)
 				
 				content = command_id
 				self.set_handler(name,attrs,content)
@@ -187,11 +182,16 @@ class Parser(PCA_Parser.Parser):
 				response_message = self.handler.getHandlerResponse()	
 				
 				
-				
-				if command_id == "bind_receiver":
+				if command_id == "bind_receiver" or command_id == "bind_tranceiver":
 					address_range = self.handler.getADDRESS_RANGE()
 					name = "address_range"
 					attrs = address_range
+					content = attrs
+					self.set_handler(name,attrs,content)
+                    
+					AIM = self.handler.getSystem_ID()
+					name = "system_id"
+					attrs = AIM
 					content = attrs
 					self.set_handler(name,attrs,content)
 					
@@ -201,10 +201,25 @@ class Parser(PCA_Parser.Parser):
 					attrs = dest_address
 					content = attrs
 					self.set_handler(name,attrs,content)
-				
+					TXT = self.handler.getTXT()
+					name = "TXT"
+					attrs = TXT
+					content = attrs
+					self.set_handler(name,attrs,content)
+				        message_id = response_message
+					name = "message_id"
+					attrs = message_id
+					content = attrs
+					self.set_handler(name,attrs,content)
+					DELIVER_SM_PDU = self.handler.getDELIVER_SM_PDU()
+					name = "DELIVER_SM_PDU"
+					attrs = DELIVER_SM_PDU
+					content = attrs
+					self.set_handler(name,attrs,content)
+					#Msg = "set DELIVER_SM_PDU"
+					#PCA_GenLib.WriteLog(Msg,0)
 				
 				DebugStr = self.handler.getDebugStr()
-				
 				self.DebugStr = "%s %s" % (self.DebugStr , DebugStr)
 				
 				
